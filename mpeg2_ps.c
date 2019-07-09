@@ -235,7 +235,7 @@ static int streampackage_es2ps(Muxer *hd, char *esData, int esLen, int frm_type,
     gb28181_make_ps_header(szTempPacketHead + nSizePos, pts);
     nSizePos += PS_HDR_LEN;
 
-    if (frm_type == 0) {
+    if (frm_type) {
         gb28181_make_sys_header(szTempPacketHead + nSizePos);
         nSizePos += SYS_HDR_LEN;
     }
