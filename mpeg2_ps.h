@@ -9,12 +9,28 @@ typedef struct {
     char *  esRawData;
 } EsFrame;
 
-typedef void (*fnPsMuxerCb)(char* psData, unsigned long dataLen, unsigned int lastPackMark);
+typedef void (*fnPsMuxerFrameCb)(char* psData, unsigned long dataLen, unsigned int lastPackMark);
 
-MuxerHandle create_ps_muxer(fnPsMuxerCb muxer_cb);
+/**
+ * create handle
+ *
+ * @param fnPsMuxerFrameCb: callback ps frame
+ *					
+ * @return muxer handle
+ */ 
+MuxerHandle CreatePsStreamMuxer(fnPsMuxerFrameCb muxer_cb);
 
-void release_ps_muxer(MuxerHandle hd);
+/**
+ * Insert h264 (ES) Frame
+ *
+ * @return success:0, fail:other value
+ */ 
+int InputEsFrame(MuxerHandle hd, EsFrame *frame);
 
-int input_es_frame(MuxerHandle hd, EsFrame *frame);
+/**
+ * Release converter
+ *
+ */ 
+void ReleasePsMuxer(MuxerHandle hd);
 
 #endif

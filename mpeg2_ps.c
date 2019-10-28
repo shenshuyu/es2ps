@@ -14,10 +14,10 @@
 #define PS_PES_PAYLOAD_SIZE 1300
 
 typedef struct {
-    fnPsMuxerCb cb;
-    void *      userdata;
-    char *      pTempEsData;
-    int         tempBuffLen;
+    fnPsMuxerFrameCb 	cb;
+    void *      		userdata;
+    char *      		pTempEsData;
+    int         		tempBuffLen;
 } Muxer;
 
 typedef struct  
@@ -209,19 +209,20 @@ static int gb28181_make_rtp_header(char *pData, int marker_flag, unsigned short 
     bitsBuffer.p_data =    (unsigned char *)(pData);
     
     memset(bitsBuffer.p_data, 0, RTP_HDR_SIZE);
-    bits_write(&bitsBuffer, 2, RTP_VERSION);    /* rtp version     */
-    bits_write(&bitsBuffer, 1, 0);                /* rtp padding     */
-    bits_write(&bitsBuffer, 1, 0);                /* rtp extension     */
-    bits_write(&bitsBuffer, 4, 0);                /* rtp CSRC count */
-    bits_write(&bitsBuffer, 1, (marker_flag));            /* rtp marker      */
-    bits_write(&bitsBuffer, 7, 96);            /* rtp payload type*/
-    bits_write(&bitsBuffer, 16, (cseq));            /* rtp sequence      */
-    bits_write(&bitsBuffer, 32, (curpts));         /* rtp timestamp      */
-    bits_write(&bitsBuffer, 32, (ssrc));         /* rtp SSRC          */
+    bits_write(&bitsBuffer, 2, RTP_VERSION);    	/* rtp version */
+    bits_write(&bitsBuffer, 1, 0);                	/* rtp padding */
+    bits_write(&bitsBuffer, 1, 0);                	/* rtp extension */
+    bits_write(&bitsBuffer, 4, 0);                	/* rtp CSRC count */
+    bits_write(&bitsBuffer, 1, (marker_flag));		/* rtp marker */
+    bits_write(&bitsBuffer, 7, 96);            		/* rtp payload type*/
+    bits_write(&bitsBuffer, 16, (cseq));            /* rtp sequence */
+    bits_write(&bitsBuffer, 32, (curpts));         	/* rtp timestamp */
+    bits_write(&bitsBuffer, 32, (ssrc));         	/* rtp SSRC */
     return 0;
 }
 
-static int streampackage_es2ps(Muxer *hd, char *esData, int esLen, int frm_type, long long pts, fnPsMuxerCb cb_func, void *userdata)
+static int streampackage_es2ps(Muxer *hd, char *esData, int esLen, int frm_type, 
+	long long pts, fnPsMuxerFrameCb cb_func, void *userdata)
 {
     int buf_offset;
     char szTempPacketHead[256];
@@ -271,7 +272,7 @@ static long long get_timestamp()
     return time_stamp;
 }
 
-MuxerHandle create_ps_muxer(fnPsMuxerCb muxer_cb, void *user)
+MuxerHandle CreatePsStreamMuxer(fnPsMuxerFrameCb muxer_cb, void *user)
 {
     Muxer *ht = (Muxer *)malloc(sizeof(Muxer));
     ht->cb = muxer_cb;
@@ -281,17 +282,19 @@ MuxerHandle create_ps_muxer(fnPsMuxerCb muxer_cb, void *user)
     return (MuxerHandle *)ht;
 }
 
-void release_ps_muxer(MuxerHandle* muxer)
+void ReleasePsMuxer(MuxerHandle* muxer)
 {
     Muxer *ht = (Muxer *)muxer;
     if (ht) {
-        if (ht->pTempEsData) (free(ht->pTempEsData));
+        if (ht->pTempEsData) {
+			free(ht->pTempEsData);
+       	}
         free(ht);
         ht = NULL;
     }
 }
 
-int input_es_frame(MuxerHandle hd, EsFrame *frame)
+int InputEsFrame(MuxerHandle hd, EsFrame *frame)
 {
     Muxer *ht = (Muxer *)hd;
     if (!ht) {
@@ -303,5 +306,5 @@ int input_es_frame(MuxerHandle hd, EsFrame *frame)
         //log here
         return -1;
     }
-    return 0;
+	return 0;
 }
